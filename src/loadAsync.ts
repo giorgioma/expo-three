@@ -43,7 +43,7 @@ export default async function loadAsync(
     );
   }
   const asset = urls[0];
-  let url: string | null = await uriAsync(asset);
+  let url = asset.uri;
 
   if (url == null) {
     throw new Error(
@@ -52,32 +52,33 @@ export default async function loadAsync(
   }
 
   if (urls.length === 1) {
-    if (url.match(/\.(jpeg|jpg|gif|png)$/)) {
+    const type = '.' + asset.type;
+    if (type.match(/\.(jpeg|jpg|gif|png)$/)) {
       return loadTextureAsync({ asset });
-    } else if (url.match(/\.assimp$/i)) {
+    } else if (type.match(/\.assimp$/i)) {
       const arrayBuffer = await loadArrayBufferAsync({ uri: url, onProgress });
       const AssimpLoader = loaderClassForExtension('assimp');
       const loader = new AssimpLoader();
       return loader.parse(arrayBuffer, onAssetRequested);
-    } else if (url.match(/\.dae$/i)) {
+    } else if (type.match(/\.dae$/i)) {
       return loadDaeAsync({
         asset: url,
         onProgress,
         onAssetRequested,
       });
-    } else if (url.match(/\.fbx$/i)) {
+    } else if (type.match(/\.fbx$/i)) {
       const arrayBuffer = await loadArrayBufferAsync({ uri: url, onProgress });
       const FBXLoader = loaderClassForExtension('fbx');
       const loader = new FBXLoader();
       return loader.parse(arrayBuffer, onAssetRequested);
-    } else if (url.match(/\.glb|gltf$/i)) {
+    } else if (type.match(/\.(glb|gltf)$/i)) {
       const arrayBuffer = await loadArrayBufferAsync({ uri: url, onProgress });
       const GLTFLoader = loaderClassForExtension('gltf');
       const loader = new GLTFLoader();
       return new Promise((res, rej) =>
         loader.parse(arrayBuffer, onAssetRequested, res, rej)
       );
-    } else if (url.match(/\.x$/i)) {
+    } else if (type.match(/\.x$/i)) {
       const XLoader = loaderClassForExtension('x');
 
       const texLoader = {
@@ -88,13 +89,13 @@ export default async function loadAsync(
       return new Promise((res, rej) =>
         loader.load([url, false], res, onProgress, rej)
       );
-    } else if (url.match(/\.json$/i)) {
+    } else if (type.match(/\.json$/i)) {
       throw new Error(
         'loadAsync: Please use ExpoTHREE.parseAsync({json}) instead, json can be loaded in lots of different ways.'
       );
-    } else if (url.match(/\.obj$/i)) {
+    } else if (type.match(/\.obj$/i)) {
       return loadObjAsync({ asset: url, onAssetRequested });
-    } else if (url.match(/\.mtl$/i)) {
+    } else if (type.match(/\.mtl$/i)) {
       return loadMtlAsync({ asset: url, onAssetRequested });
     } else {
       const LoaderClass = loaderClassForUri(url);
